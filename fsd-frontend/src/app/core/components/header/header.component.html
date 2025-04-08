@@ -1,0 +1,15 @@
+<header [@headerAnimation]="headerState" class="header">
+  <nav class="nav-container">
+    <div class="logo">
+      <a routerLink="/">SportsHub</a>
+    </div>
+    <div class="auth-buttons" *ngIf="!isLoggedIn">
+      <a routerLink="/login" class="btn btn-outline">Login</a>
+      <a routerLink="/register" class="btn btn-primary">Register</a>
+    </div>
+    <div class="auth-buttons" *ngIf="isLoggedIn">
+      <a routerLink="/dashboard" class="btn btn-primary">Dashboard</a>
+      <button (click)="logout()" class="btn btn-outline">Logout</button>
+    </div>
+  </nav>
+</header>
