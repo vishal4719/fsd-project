@@ -22,6 +22,8 @@ public class User {
 
     @Column(unique = true)
     private String email;
+    private String resetToken;
+    private LocalDateTime tokenCreationDate;
 
     @Column(unique = true)
     private String phone_no;
