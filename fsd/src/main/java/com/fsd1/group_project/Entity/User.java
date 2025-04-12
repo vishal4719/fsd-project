@@ -35,12 +35,4 @@ public class User {
     @Column(name = "roles") // Store roles as a comma-separated string
     private String roles;
 
-    // Utility methods to handle roles as a List<String>
-    public List<String> getRolesAsList() {
-        return roles != null ? Arrays.asList(roles.split(",")) : List.of();
-    }
-
-    public void setRolesFromList(List<String> rolesList) {
-        this.roles = String.join(",", rolesList);
-    }
 }

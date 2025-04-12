@@ -103,8 +103,30 @@
         >
           <small *ngIf="phone_no?.errors?.['required']">Phone number is required</small>
           <small *ngIf="phone_no?.errors?.['pattern']"
-            >Please enter a valid phone number</small
+            >Please enter a valid 10-digit phone number</small
           >
+        </div>
+      </div>
+
+      <!-- Role Selection -->
+      <div class="form-group">
+        <label for="roles">Select Role</label>
+        <select
+          id="roles"
+          formControlName="roles"
+          class="form-control"
+          [ngClass]="{
+            'is-invalid': role?.invalid && (role?.dirty || role?.touched)
+          }"
+        >
+          <option value="">Choose a role</option>
+          <option *ngFor="let r of roles" [value]="r">{{r}}</option>
+        </select>
+        <div
+          *ngIf="role?.invalid && (role?.dirty || role?.touched)"
+          class="error-message"
+        >
+          <small *ngIf="role?.errors?.['required']">Role selection is required</small>
         </div>
       </div>
 

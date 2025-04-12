@@ -11,6 +11,7 @@ import {
   tap,
   catchError,
 } from 'rxjs';
+import { Router } from '@angular/router';
 
 // Interfaces for request/response types
 export interface SignupRequest {
@@ -19,6 +20,7 @@ export interface SignupRequest {
   password: string;
   clg_name: string;
   phone_no: string;
+  roles: string;
 }
 
 export interface SignupResponse {
@@ -31,30 +33,29 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  token: string;
-  role: string[];
   message: string;
-  username: string;
+  token: string;
+  role: string;
 }
 
 export interface DashboardResponse {
-  roles: string[];
-  email: string;
   message: string;
   username: string;
-  clg_name: string; 
+  role: string;
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api/auth';
-  private tokenKey = 'sports_jwt_token';
+  private apiUrl = 'http://localhost:8080/api';
+  private tokenKey = 'auth_token';
+  private userRoleKey = 'user_role';
+  private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasValidToken());
   private authState = new BehaviorSubject<boolean>(false);
   private userData = new BehaviorSubject<{ email: string; username: string } | null>(null);
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private router: Router) {
     // Initialize auth state from localStorage
     this.authState.next(this.isLoggedIn());
     if (this.isLoggedIn()) {
@@ -73,39 +74,48 @@ export class AuthService {
   }
 
   // Signup new user
-  signup(userData: SignupRequest): Observable<SignupResponse> {
-    return this.http
-      .post<SignupResponse>(`${this.apiUrl}/signup`, userData)
-      .pipe(catchError(this.handleError));
+  signup(data: SignupRequest): Observable<SignupResponse> {
+    console.log('Sending signup request:', data);
+    return this.http.post<SignupResponse>(`${this.apiUrl}/auth/signup`, data, { headers: this.getHeaders() })
+      .pipe(
+        tap(response => console.log('Signup response:', response)),
+        catchError(this.handleError.bind(this))
+      );
   }
 
   // Login user
-  login(credentials: LoginRequest): Observable<LoginResponse> {
-    return this.http
-      .post<LoginResponse>(`${this.apiUrl}/login`, credentials)
+  login(data: LoginRequest): Observable<LoginResponse> {
+    console.log('Sending login request:', data);
+    return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, data, { headers: this.getHeaders() })
       .pipe(
-        tap((response) => {
-          this.saveToken(response.token);
-          this.authState.next(true);
-          this.userData.next({
-            email: credentials.email,
-            username: response.username,
-          });
+        tap(response => {
+          if (!response?.token || !response?.role) {
+            throw new Error('Invalid response from server');
+          }
+          this.setToken(response.token);
+          this.setUserRole(response.role);
+          this.isAuthenticatedSubject.next(true);
+          this.redirectToDashboard(response.role);
         }),
-        catchError(this.handleError)
+        catchError(this.handleError.bind(this))
       );
   }
 
   // Get dashboard data
   getDashboard(): Observable<DashboardResponse> {
-    const headers = this.getAuthHeaders();
+    const role = localStorage.getItem(this.userRoleKey);
+    if (!role) {
+      return throwError(() => new Error('No role found'));
+    }
+    
+    const endpoint = role.toLowerCase();
     return this.http
-      .get<DashboardResponse>(`${this.apiUrl}/dashboard`, { headers })
+      .get<DashboardResponse>(`${this.apiUrl}/roles/${endpoint}`, { headers: this.getAuthHeaders() })
       .pipe(
-        tap((response) => {
+        tap(response => {
           this.userData.next({
-            email: response.email,
-            username: response.username,
+            email: response.username,
+            username: response.username
           });
         }),
         catchError(this.handleError)
@@ -130,8 +140,12 @@ export class AuthService {
   }
 
   // Private helper methods
-  private saveToken(token: string): void {
+  private setToken(token: string): void {
     localStorage.setItem(this.tokenKey, token);
+  }
+
+  private setUserRole(role: string): void {
+    localStorage.setItem(this.userRoleKey, role);
   }
 
   private getAuthHeaders(): HttpHeaders {
@@ -142,7 +156,32 @@ export class AuthService {
     });
   }
 
+  private redirectToDashboard(role: string): void {
+    const roleLower = role.toLowerCase();
+    switch (roleLower) {
+      case 'viewer':
+        this.router.navigate(['/dashboard/viewer']);
+        break;
+      case 'task_manager':
+        this.router.navigate(['/dashboard/task-manager']);
+        break;
+      case 'participant':
+        this.router.navigate(['/dashboard/participant']);
+        break;
+      default:
+        this.router.navigate(['/dashboard']);
+        break;
+    }
+  }
+
+  private getHeaders(): HttpHeaders {
+    return new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+  }
+
   private handleError(error: HttpErrorResponse) {
+    console.error('API Error:', error);
     let errorMessage = 'An error occurred';
     
     if (error.error instanceof ErrorEvent) {
@@ -150,10 +189,22 @@ export class AuthService {
       errorMessage = error.error.message;
     } else {
       // Server-side error
-      errorMessage = error.error?.message || `Error Code: ${error.status}\nMessage: ${error.message}`;
+      if (error.status === 400) {
+        errorMessage = error.error?.message || 'Invalid request data';
+      } else if (error.status === 401) {
+        errorMessage = 'Invalid credentials';
+      } else if (error.status === 403) {
+        errorMessage = 'Access denied';
+      } else {
+        errorMessage = error.error?.message || `Error: ${error.status} - ${error.statusText}`;
+      }
     }
     
-    console.error(errorMessage);
     return throwError(() => new Error(errorMessage));
+  }
+
+  private hasValidToken(): boolean {
+    const token = this.getToken();
+    return !!token;
   }
 }

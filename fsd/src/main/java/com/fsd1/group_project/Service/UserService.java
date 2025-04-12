@@ -18,10 +18,9 @@ public class UserService {
    @Autowired
     private PasswordEncoder passwordEncoder;
     public void saveNewUser(User user) {
-        // Password is already encoded in UserController
-        user.setRoles(String.valueOf(Arrays.asList("USER")));
         userRepository.save(user);
     }
+
 
     public List<User>getAll(){
        return  userRepository.findAll();

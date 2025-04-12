@@ -20,6 +20,7 @@ export class RegisterComponent implements OnInit {
   registerForm!: FormGroup;
   isSubmitting = false;
   errorMessage = '';
+  roles: string[] = ['VIEWER', 'TASK_MANAGER', 'PARTICIPANT'];
 
   constructor(
     private fb: FormBuilder,
@@ -39,7 +40,8 @@ export class RegisterComponent implements OnInit {
         password: ['', [Validators.required, Validators.minLength(6)]],
         confirmPassword: ['', [Validators.required]],
         clg_name: ['', [Validators.required, Validators.minLength(3)]],
-        phone_no: ['', [Validators.required, Validators.pattern('^[0-9]*$')]],
+        phone_no: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
+        roles: ['', [Validators.required]]
       },
       {
         validators: this.passwordMatchValidator,
@@ -63,20 +65,24 @@ export class RegisterComponent implements OnInit {
 
   onSubmit(): void {
     if (this.registerForm.invalid) {
+      this.markFormGroupTouched(this.registerForm);
       return;
     }
 
     this.isSubmitting = true;
     this.errorMessage = '';
 
-    const { name, email, password, clg_name, phone_no } = this.registerForm.value;
+    const { name, email, password, clg_name, phone_no, roles } = this.registerForm.value;
     const signupData: SignupRequest = {
       name,
       email,
       password,
       clg_name,
       phone_no,
+      roles
     };
+
+    console.log('Sending signup data:', signupData);
 
     this.authService.signup(signupData).subscribe({
       next: (response: SignupResponse) => {
@@ -89,6 +95,15 @@ export class RegisterComponent implements OnInit {
         this.isSubmitting = false;
         this.errorMessage = error.message || 'Registration failed. Please try again later.';
       },
+    });
+  }
+
+  private markFormGroupTouched(formGroup: FormGroup) {
+    Object.values(formGroup.controls).forEach(control => {
+      control.markAsTouched();
+      if (control instanceof FormGroup) {
+        this.markFormGroupTouched(control);
+      }
     });
   }
 
@@ -110,5 +125,8 @@ export class RegisterComponent implements OnInit {
   }
   get phone_no() {
     return this.registerForm.get('phone_no');
+  }
+  get role() {
+    return this.registerForm.get('roles');
   }
 }

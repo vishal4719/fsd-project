@@ -49,34 +49,39 @@ public class PublicController {
         try {
             if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "email is required"));
-
             }
+
             Optional<User> existingUser = userService.findByEmail(user.getEmail());
             if (existingUser.isPresent()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "email already exists"));
             }
+
             if (user.getName() == null || user.getName().trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error","name is required"));
-
             }
+
             if (user.getClg_name() == null || user.getClg_name().trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "College name is required"));
-
             }
-            if (user.getPhone_no() == null||user.getPhone_no().length()<10||user.getPhone_no().length()>10) {
+
+            if (user.getPhone_no() == null || user.getPhone_no().length() < 10 || user.getPhone_no().length() > 10) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Phone no should be of 10 digits"+user.getPhone_no()+"length is: "+user.getPhone_no().length()));
-
             }
+
+            // Set default role if not provided
+            if (user.getRoles() == null || user.getRoles().trim().isEmpty()) {
+                user.setRoles("USER");
+            }
+
             user.setDate(LocalDateTime.now());
             user.setPassword(passwordEncoder.encode(user.getPassword()));
-            userService.saveNewUser(user);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message","User Registered Succesfully"));
-        }catch (Exception e){
-            e.printStackTrace();
+            userService.saveNewUser(user); // Changed from saveNewUser to saveUser
 
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "User Registered Successfully"));
+        } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
-
     }
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
@@ -123,26 +128,6 @@ public class PublicController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Invalid username or password: " + e.getMessage()));
         }
-    }
-       @GetMapping("/dashboard")
-    public ResponseEntity<?> dashboard() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUserEmail = authentication.getName();
-    
-        Optional<User> optionalUser = userService.findByEmail(currentUserEmail);
-        if (optionalUser.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "User not found"));
-        }
-    
-        User user = optionalUser.get();
-    
-        return ResponseEntity.ok(Map.of(
-                "message", "Welcome to your dashboard",
-                "username", user.getName(),
-                "email", user.getEmail(),
-                "roles", user.getRoles(),
-                "clg_name", user.getClg_name()
-        ));
     }
 
     @PostMapping("/logout")

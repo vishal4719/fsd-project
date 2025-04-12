@@ -45,8 +45,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> {}) // enable CORS (use empty lambda instead of .cors().and())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/dashboard/**").authenticated()
+                        .requestMatchers("/api/auth/**").permitAll() .requestMatchers("/api/roles/viewer").hasRole("VIEWER")
+                        .requestMatchers("/api/roles/task-manager").hasRole("TASK_MANAGER")
+                        .requestMatchers("/api/roles/participant").hasRole("PARTICIPANT")
+                        .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) ->
