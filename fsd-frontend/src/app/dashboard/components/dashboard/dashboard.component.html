@@ -13,16 +13,12 @@
       <p>Welcome back, {{ dashboardData.username }}!</p>
 
       <div [ngSwitch]="dashboardData.role">
-        <div *ngSwitchCase="'VIEWER'" class="role-content">
-          <p>As a viewer, you can browse and view all available content.</p>
+        <div *ngSwitchCase="'USER'" class="role-content">
+          <p>As a user, you can browse and participate in events.</p>
         </div>
         
         <div *ngSwitchCase="'TASK_MANAGER'" class="role-content">
-          <p>As a task manager, you can create and manage tasks for participants.</p>
-        </div>
-        
-        <div *ngSwitchCase="'PARTICIPANT'" class="role-content">
-          <p>As a participant, you can view and complete assigned tasks.</p>
+          <p>As an event manager, you can create and manage events.</p>
         </div>
         
         <div *ngSwitchDefault class="role-content">

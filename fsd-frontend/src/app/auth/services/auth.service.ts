@@ -108,7 +108,8 @@ export class AuthService {
       return throwError(() => new Error('No role found'));
     }
     
-    const endpoint = role.toLowerCase();
+    // Convert role to lowercase and replace underscore with hyphen
+    const endpoint = role.toLowerCase().replace('_', '-');
     return this.http
       .get<DashboardResponse>(`${this.apiUrl}/roles/${endpoint}`, { headers: this.getAuthHeaders() })
       .pipe(
@@ -159,14 +160,11 @@ export class AuthService {
   private redirectToDashboard(role: string): void {
     const roleLower = role.toLowerCase();
     switch (roleLower) {
-      case 'viewer':
-        this.router.navigate(['/dashboard/viewer']);
+      case 'user':
+        this.router.navigate(['/dashboard/user']);
         break;
       case 'task_manager':
         this.router.navigate(['/dashboard/task-manager']);
-        break;
-      case 'participant':
-        this.router.navigate(['/dashboard/participant']);
         break;
       default:
         this.router.navigate(['/dashboard']);

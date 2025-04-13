@@ -20,7 +20,11 @@ export class RegisterComponent implements OnInit {
   registerForm!: FormGroup;
   isSubmitting = false;
   errorMessage = '';
-  roles: string[] = ['VIEWER', 'TASK_MANAGER', 'PARTICIPANT'];
+  roles: string[] = ['USER', 'TASK_MANAGER'];
+  roleDisplayNames: { [key: string]: string } = {
+    'USER': 'User',
+    'TASK_MANAGER': 'Event Manager'
+  };
 
   constructor(
     private fb: FormBuilder,

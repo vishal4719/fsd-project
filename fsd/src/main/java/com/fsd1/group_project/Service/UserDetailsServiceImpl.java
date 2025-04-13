@@ -22,13 +22,21 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             throw new UsernameNotFoundException("User not found with email: " + email);
         }
 
-        // Split the roles string into an array
-        String[] roles = user.getRoles() != null ? user.getRoles().split(",") : new String[0];
+        // Get the role and ensure it's one of the valid roles
+        String role = user.getRoles();
+        if (role == null || role.trim().isEmpty()) {
+            role = "USER"; // Default role
+        }
+        
+        // Validate role
+        if (!role.equals("USER") && !role.equals("TASK_MANAGER")) {
+            role = "USER"; // Default to USER if invalid role
+        }
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getEmail())
                 .password(user.getPassword())
-                .roles(roles) // Pass the roles array
+                .roles(role) // Pass the single role
                 .build();
     }
 }

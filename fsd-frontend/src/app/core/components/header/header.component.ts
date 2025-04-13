@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink,Router} from '@angular/router';
 import { AuthService } from '../../../auth/services/auth.service';
 import { Subscription } from 'rxjs';
 import { inject } from '@angular/core';
@@ -51,6 +51,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   logout(): void {
     this.authService.logout();
-  
+    this.router.navigate(['/login']);
   }
 }

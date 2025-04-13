@@ -45,9 +45,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> {}) // enable CORS (use empty lambda instead of .cors().and())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() .requestMatchers("/api/roles/viewer").hasRole("VIEWER")
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/roles/user").hasRole("USER")
                         .requestMatchers("/api/roles/task-manager").hasRole("TASK_MANAGER")
-                        .requestMatchers("/api/roles/participant").hasRole("PARTICIPANT")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception
@@ -63,8 +63,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-
-    // 🔥 CORS Configuration Bean
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();

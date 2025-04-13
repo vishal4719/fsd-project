@@ -14,8 +14,8 @@ import java.util.Map;
 @RequestMapping("/api/roles")
 public class DashboardController {
 
-    @GetMapping("/viewer")
-    @PreAuthorize("hasRole('VIEWER')")
+    @GetMapping("/user")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> viewerDashboard() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
@@ -23,7 +23,7 @@ public class DashboardController {
         return ResponseEntity.ok(Map.of(
                 "message", "Welcome to Viewer Dashboard",
                 "username", username,
-                "role", "VIEWER"
+                "role", "USER"
         ));
     }
 
@@ -40,16 +40,5 @@ public class DashboardController {
         ));
     }
 
-    @GetMapping("/participant")
-    @PreAuthorize("hasRole('PARTICIPANT')")
-    public ResponseEntity<?> participantDashboard() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-
-        return ResponseEntity.ok(Map.of(
-                "message", "Welcome to Participant Dashboard",
-                "username", username,
-                "role", "PARTICIPANT"
-        ));
-    }
+   
 }

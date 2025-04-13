@@ -120,7 +120,7 @@
           }"
         >
           <option value="">Choose a role</option>
-          <option *ngFor="let r of roles" [value]="r">{{r}}</option>
+          <option *ngFor="let r of roles" [value]="r">{{roleDisplayNames[r]}}</option>
         </select>
         <div
           *ngIf="role?.invalid && (role?.dirty || role?.touched)"
